@@ -111,6 +111,14 @@ app.get("/check-image/:filename", (req, res) => {
   }
 })
 
+// Add a root route for health checks
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Hotel Management API is running",
+  })
+})
+
 // Serve static files
 app.use(express.static("public"))
 

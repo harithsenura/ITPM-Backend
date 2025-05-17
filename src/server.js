@@ -16,7 +16,7 @@ app.use(express.json())
 app.use(
   cors({
     credentials: true,
-    origin: ["https://itpm-backend-production.up.railway.app"],
+    origin: ["https://hotel-management-system-red.vercel.app"],
   }),
 )
 

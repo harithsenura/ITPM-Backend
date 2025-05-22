@@ -17,14 +17,14 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: [
-      "Content-Type", 
-      "Authorization", 
-      "X-Requested-With", 
-      "Accept", 
-      "Origin", 
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
       "Cache-Control",
       "Expires",
-      "Pragma"
+      "Pragma",
     ],
     exposedHeaders: ["Content-Range", "X-Content-Range"],
     preflightContinue: false,
@@ -41,8 +41,8 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true")
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE")
   res.header(
-    "Access-Control-Allow-Headers", 
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Expires, Pragma"
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Expires, Pragma",
   )
 
   // Handle preflight requests

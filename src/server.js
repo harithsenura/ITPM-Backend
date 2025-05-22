@@ -10,15 +10,38 @@ import fs from "fs"
 const app = express()
 dotenv.config()
 
-// Middleware
-app.use(express.json())
-
+// Enhanced CORS configuration
 app.use(
   cors({
+    origin: ["https://hotel-management-system-red.vercel.app", "http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    origin: ["https://hotel-management-system-red.vercel.app"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   }),
 )
+
+// Add these headers to all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin === "https://hotel-management-system-red.vercel.app" || origin === "http://localhost:3000") {
+    res.header("Access-Control-Allow-Origin", origin)
+  }
+  res.header("Access-Control-Allow-Credentials", "true")
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE")
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(204).send()
+  }
+  next()
+})
+
+// Middleware
+app.use(express.json())
 
 // Connect to MongoDB
 mongoose
@@ -88,7 +111,7 @@ app.use("/gifts", giftsRouter)
 app.use("/gift-orders", giftOrderRoutes)
 app.use("/payments", payment)
 
-// Vouchers Management - Add this line
+// Vouchers Management
 app.use("/vouchers", voucherRouter)
 
 // Add a diagnostic route to check if images are being served correctly

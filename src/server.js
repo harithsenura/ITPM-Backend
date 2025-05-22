@@ -5,52 +5,22 @@ import dotenv from "dotenv"
 import path from "path"
 import { fileURLToPath } from "url"
 import fs from "fs"
+import corsMiddleware from "./middleware/cors.middleware.js"
 
 // Initialize app
 const app = express()
 dotenv.config()
 
-// CORS configuration - THIS IS THE CRITICAL PART
+// Apply CORS middleware BEFORE any other middleware
+app.use(corsMiddleware)
+
+// Basic CORS setup as a fallback
 app.use(
   cors({
     origin: ["https://hotel-management-system-red.vercel.app", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-      "Cache-Control",
-      "Expires",
-      "Pragma",
-    ],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   }),
 )
-
-// Add these headers to all responses
-app.use((req, res, next) => {
-  const origin = req.headers.origin
-  if (origin === "https://hotel-management-system-red.vercel.app" || origin === "http://localhost:3000") {
-    res.header("Access-Control-Allow-Origin", origin)
-  }
-  res.header("Access-Control-Allow-Credentials", "true")
-  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH")
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Expires, Pragma",
-  )
-
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    return res.status(204).send()
-  }
-  next()
-})
 
 // Middleware
 app.use(express.json())
@@ -72,6 +42,7 @@ app.use(express.static(path.join(__dirname, "public")))
 // Log the uploads directory path for debugging
 console.log("Uploads directory path:", path.join(__dirname, "uploads"))
 
+// Import routers
 import foodRouter from "./routers/food.router.js"
 import userRouter from "./routers/user.router.js"
 import uploadRouter from "./routers/upload.router.js"
@@ -80,31 +51,8 @@ import eventPlannerRoute from "./routers/eventPlannerRoute.js"
 import customerRouter from "./routers/customers.js"
 import roomRouter from "./routers/rooms.js"
 import voucherRouter from "./routers/vouchers.js"
-
-import { dbconnect } from "./config/database.config.js"
-dbconnect()
-
-app.use("/api/foods", foodRouter)
-app.use("/api/users", userRouter)
-app.use("/api/upload", uploadRouter)
-
-// event management
-app.use("/events", eventsRoute)
-app.use("/eventplanners", eventPlannerRoute)
-
-// Customer Management
-app.use("/customer", customerRouter)
-app.use("/room", roomRouter)
-
-// employee
 import EmployeeRouter from "./routers/Employees.js"
-app.use("/employee", EmployeeRouter)
-
-// leave
 import LeaveRouter from "./routers/Leaves.js"
-app.use("/leave", LeaveRouter)
-
-// Bar
 import orderRoutes from "./routers/orders.js"
 import giftsRouter from "./routers/gifts.js"
 import giftOrderRoutes from "./routers/gift-orders.js"
@@ -113,17 +61,26 @@ import userRoutes from "./routers/userRoutes.js"
 import billsRoutes from "./routers/billsRoutes.js"
 import payment from "./routers/payments.js"
 
+import { dbconnect } from "./config/database.config.js"
+dbconnect()
+
+// Apply routes
+app.use("/api/foods", foodRouter)
+app.use("/api/users", userRouter)
+app.use("/api/upload", uploadRouter)
+app.use("/events", eventsRoute)
+app.use("/eventplanners", eventPlannerRoute)
+app.use("/customer", customerRouter)
+app.use("/room", roomRouter)
+app.use("/employee", EmployeeRouter)
+app.use("/leave", LeaveRouter)
 app.use("/api/items", itemRoutes)
 app.use("/api/users", userRoutes)
 app.use("/api/bills", billsRoutes)
-
-// Gifts Management
 app.use("/orders", orderRoutes)
 app.use("/gifts", giftsRouter)
 app.use("/gift-orders", giftOrderRoutes)
 app.use("/payments", payment)
-
-// Vouchers Management
 app.use("/vouchers", voucherRouter)
 
 // Add a diagnostic route to check if images are being served correctly
@@ -151,6 +108,17 @@ app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
     message: "Hotel Management API is running",
+    cors: "enabled",
+    allowedOrigins: ["https://hotel-management-system-red.vercel.app", "http://localhost:3000"],
+  })
+})
+
+// Add a CORS test route
+app.get("/cors-test", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "CORS is working correctly",
+    origin: req.headers.origin || "No origin header",
   })
 })
 
@@ -169,6 +137,13 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
     mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    cors: "enabled",
+    headers: {
+      "Access-Control-Allow-Origin": res.getHeader("Access-Control-Allow-Origin") || "not set",
+      "Access-Control-Allow-Methods": res.getHeader("Access-Control-Allow-Methods") || "not set",
+      "Access-Control-Allow-Headers": res.getHeader("Access-Control-Allow-Headers") || "not set",
+      "Access-Control-Allow-Credentials": res.getHeader("Access-Control-Allow-Credentials") || "not set",
+    },
   })
 })
 

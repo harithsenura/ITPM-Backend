@@ -1,6 +1,5 @@
 // Import necessary modules using ES6 syntax
 import { Router } from "express"
-import Room from "../models/room.js" // Ensure the correct path and file extension
 import multer from "multer"
 import path from "path"
 import { fileURLToPath } from "url"
@@ -46,6 +45,25 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
+})
+
+// Add CORS headers to all routes in this router
+router.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin === "https://hotel-management-system-red.vercel.app" || origin === "http://localhost:3000") {
+    res.header("Access-Control-Allow-Origin", origin)
+  }
+  res.header("Access-Control-Allow-Credentials", "true")
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE,PATCH")
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Expires, Pragma",
+  )
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send()
+  }
+  next()
 })
 
 // Update the add route to handle multiple images

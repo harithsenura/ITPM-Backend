@@ -10,13 +10,22 @@ import fs from "fs"
 const app = express()
 dotenv.config()
 
-// Enhanced CORS configuration
+// CORS configuration - THIS IS THE CRITICAL PART
 app.use(
   cors({
     origin: ["https://hotel-management-system-red.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    allowedHeaders: [
+      "Content-Type", 
+      "Authorization", 
+      "X-Requested-With", 
+      "Accept", 
+      "Origin", 
+      "Cache-Control",
+      "Expires",
+      "Pragma"
+    ],
     exposedHeaders: ["Content-Range", "X-Content-Range"],
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -31,7 +40,10 @@ app.use((req, res, next) => {
   }
   res.header("Access-Control-Allow-Credentials", "true")
   res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE")
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+  res.header(
+    "Access-Control-Allow-Headers", 
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Expires, Pragma"
+  )
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
